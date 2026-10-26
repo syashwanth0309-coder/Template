@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-
-
 class EnquiryConfig(AppConfig):
-    name = 'enquiry'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "enquiry"

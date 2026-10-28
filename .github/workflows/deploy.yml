@@ -1,3 +1,4 @@
+
 name: Deploy Django Portfolio
 
 on:
@@ -8,13 +9,44 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
-      - name: Verify runner
+      - name: Deploy portfolio on EC2
+        shell: bash
         run: |
-          echo "GitHub Actions is running on EC2!"
-          whoami
-          pwd
+          set -e
+
+          cd /home/ec2-user/Template
+
+          echo "Updating application code..."
+          git pull --ff-only origin main
+
+          echo "Checking Django configuration..."
+          .venv/bin/python manage.py check
+
+          echo "Collecting static files..."
+          .venv/bin/python manage.py collectstatic --noinput
+
+          echo "Publishing static files..."
+          sudo cp -a /home/ec2-user/Template/staticfiles/. /var/www/portfolio/static/
+
+          echo "Restarting Gunicorn..."
+          sudo systemctl restart portfolio
+
+          echo "Checking application service..."
+          sudo systemctl is-active --quiet portfolio
+
+          echo "Checking website response..."
+          curl --fail --silent --show-error \
+            --max-time 20 \
+            -o /dev/null \
+            -w "Website HTTP status: %{http_code}\n" \
+            -H "Host: 13.60.33.8" \
+            http://127.0.0.1/

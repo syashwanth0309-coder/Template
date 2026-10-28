@@ -1,0 +1,20 @@
+name: Deploy Django Portfolio
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Verify runner
+        run: |
+          echo "GitHub Actions is running on EC2!"
+          whoami
+          pwd

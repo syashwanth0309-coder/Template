@@ -22,7 +22,6 @@ jobs:
         shell: bash
         run: |
           set -e
-
           cd /home/ec2-user/Template
 
           echo "Updating application code..."
@@ -35,12 +34,10 @@ jobs:
           .venv/bin/python manage.py collectstatic --noinput
 
           echo "Publishing static files..."
-          sudo cp -a /home/ec2-user/Template/staticfiles/. /var/www/portfolio/static/
+          sudo cp -a staticfiles/. /var/www/portfolio/static/
 
-          echo "Restarting Gunicorn..."
+          echo "Restarting portfolio service..."
           sudo systemctl restart portfolio
-
-          echo "Checking application service..."
           sudo systemctl is-active --quiet portfolio
 
           echo "Checking website response..."
